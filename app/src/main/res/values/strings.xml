@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Messenger</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="menu_new_message">New Message</string>
+</resources>
