@@ -1,4 +1,4 @@
-package com.mindeggs.messenger
+package com.mindeggs.messenger.messages
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -8,19 +8,18 @@ import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
-import com.mindeggs.messenger.messages.LatestMessagesActivity
-import com.mindeggs.messenger.messages.NewMessageActivity
+import com.mindeggs.messenger.R
 import com.mindeggs.messenger.model.ChatMessage
 import com.mindeggs.messenger.model.User
+import com.mindeggs.messenger.views.ChatFromItem
+import com.mindeggs.messenger.views.ChatToItem
 import com.squareup.picasso.Picasso
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.Item
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.activity_chat_log.*
-import kotlinx.android.synthetic.main.activity_chat_log.view.*
 import kotlinx.android.synthetic.main.chat_from_row.view.*
 import kotlinx.android.synthetic.main.chat_to_row.view.*
-import java.sql.Timestamp
 
 class ChatLogActivity : AppCompatActivity() {
 
@@ -38,9 +37,9 @@ class ChatLogActivity : AppCompatActivity() {
 
         recyclerview_chat_log.adapter = adapter
 
-        //Adding the username as the page title
-        //val username = intent.getStringExtra(NewMessageActivity.USER_KEY)
         toUser = intent.getParcelableExtra<User>(NewMessageActivity.USER_KEY)
+
+        //Adding Username as the Title
         if (toUser != null) {
             supportActionBar?.title = toUser?.username
         }
@@ -50,12 +49,12 @@ class ChatLogActivity : AppCompatActivity() {
         send_button_chat_log.setOnClickListener{
 
             val message = edittext_chat_log.text.toString()
-
             Log.d(TAG, message)
-            performSendMessage()
 
+            if(message != "") {
+                performSendMessage()
+            }
         }
-
     }
 
     private fun listenForMessages() {
@@ -84,27 +83,25 @@ class ChatLogActivity : AppCompatActivity() {
                 }
 
             }
-            override fun onCancelled(p0: DatabaseError) {
+            override fun onCancelled(snapshot: DatabaseError) {
 
             }
 
-            override fun onChildChanged(p0: DataSnapshot, p1: String?) {
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
 
             }
 
-            override fun onChildMoved(p0: DataSnapshot, p1: String?) {
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {
 
             }
 
-            override fun onChildRemoved(p0: DataSnapshot) {
+            override fun onChildRemoved(snapshot: DataSnapshot) {
 
             }
         })
     }
 
     private fun performSendMessage() {
-
-        //Send the message to firebase and present message
 
         //Create a node in the database
         val message = edittext_chat_log.text.toString()
@@ -116,10 +113,11 @@ class ChatLogActivity : AppCompatActivity() {
         val user = intent.getParcelableExtra<User>(NewMessageActivity.USER_KEY)
         val toId = user!!.uid
 
-        if(fromId == null || toId == null) return
+        if(fromId == null) return
 
         val reference = FirebaseDatabase.getInstance().getReference("/user-messages/$fromId/$toId").push()
 
+        //Reference for the user we are sending the message to
         val toReference = FirebaseDatabase.getInstance().getReference("/user-messages/$toId/$fromId").push()
 
         val timestamp = System.currentTimeMillis()/1000
@@ -140,37 +138,15 @@ class ChatLogActivity : AppCompatActivity() {
             .addOnFailureListener{
                 Log.e(TAG, it.toString())
             }
+
         toReference.setValue(chatMessage)
+
+        val latestMessageRefFrom = FirebaseDatabase.getInstance().getReference("/latest-messages/$fromId/$toId")
+
+        val latestMessageRefTo = FirebaseDatabase.getInstance().getReference("/latest-messages/$toId/$fromId")
+
+        latestMessageRefFrom.setValue(chatMessage)
+
+        latestMessageRefTo.setValue(chatMessage)
     }
-}
-
-
-class ChatFromItem(val text: String, val user: User): Item<ViewHolder>() {
-    override fun bind(viewHolder: ViewHolder, position: Int) {
-        viewHolder.itemView.chatLog_from_messageContent.text = text
-
-        val profileImage_chatlog = viewHolder.itemView.chatLog_from_chatIcon
-
-        //load image
-        Picasso.get().load(user.profileImageUrl).into(profileImage_chatlog)
-    }
-
-    override fun getLayout(): Int {
-        return R.layout.chat_from_row
-    }
-}
-
-class ChatToItem(val text: String, val user: User): Item<ViewHolder>() {
-    override fun bind(viewHolder: ViewHolder, position: Int) {
-        viewHolder.itemView.chatToLog_to_messageContent.text = text
-
-        val profileImage_chatlog = viewHolder.itemView.chatToLog_to_chatIcon
-        //load our image
-        Picasso.get().load(user.profileImageUrl).into(profileImage_chatlog)
-    }
-
-    override fun getLayout(): Int {
-        return R.layout.chat_to_row
-    }
-
 }

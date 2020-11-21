@@ -8,7 +8,6 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.mindeggs.messenger.ChatLogActivity
 import com.mindeggs.messenger.R
 import com.mindeggs.messenger.model.User
 import com.squareup.picasso.Picasso
@@ -74,7 +73,6 @@ class NewMessageActivity : AppCompatActivity() {
                 }
 
             recycleView_newMessage.adapter = adapter
-
         }
 
             override fun onCancelled(error: DatabaseError) {

@@ -20,6 +20,10 @@ import java.util.*
 
 class RegisterActivity : AppCompatActivity() {
 
+    companion object {
+        const val TAG ="RegisterActivity"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
@@ -132,10 +136,6 @@ class RegisterActivity : AppCompatActivity() {
             .addOnFailureListener {
                 Log.d(TAG, "Failed to set value to database: ${it.message}")
             }
-    }
-
-    companion object {
-        const val TAG ="RegisterActivity"
     }
 
 }
