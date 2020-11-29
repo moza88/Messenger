@@ -56,6 +56,15 @@ class LatestMessagesActivity : AppCompatActivity() {
 
     }
 
+    val latestmessageMap = HashMap<String, ChatMessage>()
+
+    private fun refreshRecyclerViewMessages() {
+        adapter.clear()
+        latestmessageMap.values.forEach{
+            adapter.add(LatestMessageRow(it))
+        }
+    }
+
     private fun listenForLatestMessages() {
         val fromId = FirebaseAuth.getInstance().uid
         val ref = FirebaseDatabase.getInstance().getReference("/latest-messages/$fromId")
@@ -64,11 +73,16 @@ class LatestMessagesActivity : AppCompatActivity() {
         ref.addChildEventListener(object: ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
                 val chatMessage = snapshot.getValue(ChatMessage::class.java) ?: return
-                adapter.add(LatestMessageRow(chatMessage))
+
+                latestmessageMap[snapshot.key!!] = chatMessage
+                refreshRecyclerViewMessages()
             }
 
             override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
-                TODO("Not yet implemented")
+                val chatMessage = snapshot.getValue(ChatMessage::class.java) ?: return
+
+                latestmessageMap[snapshot.key!!] = chatMessage
+                refreshRecyclerViewMessages()
             }
 
             override fun onChildRemoved(snapshot: DataSnapshot) {
